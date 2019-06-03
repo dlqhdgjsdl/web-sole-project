@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sist.com.project.dao.projectmemberbean">
+
+<select id="idcheck" parameterType="java.lang.String" resultType="java.lang.String">
+	SELECT ID FROM PROJECTMEMBER
+	WHERE ID=#{VALUE}
+</select>
+
+<sql id="ZipCodeSelectSql">
+SELECT ZIPCODE,SIDO,GUGUN,DONG,NVL(BUNJI,'') BUNJI,SEQ
+FROM ZIPCODE
+</sql>
+
+
+<select id="zipCodeBeanselect" resultType="ZIPCODE1" parameterType="java.lang.String">
+	<include refid="ZipCodeSelectSql"></include>
+	WHERE DONG LIKE '%'||#{VALUE}||'%'
+</select>
+<select id="password" parameterType="java.lang.String" resultType="java.lang.String">
+	SELECT PASSWORD FROM PROJECTMEMBER WHERE PASSWORD=#{VALUE}
+</select>
+
+<insert id="MemberIn" parameterType="pd">
+	<!-- <selectKey keyProperty="no" order="BEFORE" resultType="java.lang.Integer">
+	SELECT PROJECTMEMBER_SEQ.NEXTVAL FROM DUAL
+	</selectKey> -->
+	INSERT INTO PROJECTMEMBER VALUES(#{FIRSTNAME},#{NAME},#{ID},#{PASSWORD},#{GENDER},#{ADRESS},#{PHONENUM})	
+</insert>
+ 
+<select id="logincheck" parameterType="java.lang.String" resultType="java.lang.String">
+	SELECT PASSWORD FROM PROJECTMEMBER
+	WHERE ID=#{VALUE}
+</select>
+<select id="selectboardinfo" parameterType="java.lang.Integer" resultType="bulltin">
+SELECT NO,IMAGE,TITLE,WRITER,HIT,REGDATE,NAME,AGE,TEAM,NATION,CONTENTS FROM BULLTIN
+WHERE NO=#{VALUE}
+</select>
+<select id="selectpassCheck" parameterType="String" resultType="String">
+	SELECT PASSWORD FROM PROJECTMEMBER
+	WHERE ID=#{VALUE}
+</select>
+<delete id="BoardDelete" parameterType="int">
+	DELETE FROM BULLTIN WHERE NO=#{VALUE}	
+</delete>
+<update id="BoardUpdate" parameterType="bulltin">
+	UPDATE BULLTIN SET writer=#{writer},name=#{name},age=#{age},team=#{team},nation=#{nation},contents=#{contents},image=#{image}
+	WHERE NO=#{no}
+</update>
+
+<insert id="BoardInsert" parameterType="bulltin">
+INSERT INTO BULLTIN(NO,WRITER,NAME,AGE,TEAM,NATION,CONTENTS,HIT,IMAGE,REGDATE)	
+VALUES(BULLTIN_SEQ.NEXTVAL,#{writer},#{name},#{age},#{team},#{nation},#{contents},#{hit},#{image},sysdate)
+</insert>
+<update id="Hitupdate" parameterType="java.lang.Integer">
+	UPDATE BULLTIN SET HIT=HIT+1
+	WHERE NO=#{no}
+</update>
+<select id="TotalRow" parameterType="HashMap" resultType="java.lang.Integer">
+SELECT COUNT(*) FROM BULLTIN
+<if test="query!=null">
+	<where>
+		${query} LIKE '%'||#{data}||'%'
+	</where>
+</if>
+</select>
+<select id="Boardselect" resultType="bulltin" parameterType="HashMap">
+	SELECT RM,NO,IMAGE,NAME,WRITER,HIT,REGDATE
+	FROM(
+	SELECT ROWNUM RM,NO,IMAGE,NAME,WRITER,HIT,REGDATE
+	FROM(
+	SELECT NO,IMAGE,NAME,WRITER,HIT,REGDATE
+	FROM BULLTIN
+	<if test="query!=null">
+	WHERE ${query} LIKE '%' || #{data} || '%'
+	</if>
+	ORDER BY NO DESC))
+	WHERE RM BETWEEN #{start} AND #{end}
+</select>
+</mapper>
